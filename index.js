@@ -17,18 +17,20 @@ function convertToAbsolutePath(relativePath) {
 
 function extractLinksFromFile(filePath) {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const tokens = marked.lexer(fileContent);
+  const lines = fileContent.split('\n');
 
   const links = [];
-  tokens.forEach(token => {
-    if (token.type === 'link') {
+  for (const line of lines) {
+    const linkMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    if (linkMatch) {
+      const [, text, href] = linkMatch;
       links.push({
-        href: token.href,
-        text: token.text,
+        href,
+        text,
         file: filePath,
       });
     }
-  });
+  }
 
   return links;
 }
@@ -37,7 +39,7 @@ function mdLinks(dirPath, options) {
   const absolutePath = convertToAbsolutePath(dirPath);
 
   if (!pathExists(absolutePath)) {
-    return Promise.reject(new Error('La ruta no existe'));
+    return Promise.reject(new Error('Route does not exist'));
   }
 
   if (options.validate) {
