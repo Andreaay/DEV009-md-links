@@ -43,7 +43,10 @@ function mdLinks(dirPath, options) {
   }
 
   if (options.validate) {
-    // Aquí va lógica para validar links
+    const links = extractLinksFromFile(absolutePath);
+    const linkPromises = links.map((link) => validateLink(link));
+
+    return Promise.all(linkPromises);
   } else {
     const links = extractLinksFromFile(absolutePath);
     return Promise.resolve(links);
