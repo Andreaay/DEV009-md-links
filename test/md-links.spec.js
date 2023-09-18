@@ -12,7 +12,7 @@ describe('mdLinks', () => {
   });
 
   it('should reject with an error when given an invalid file path', () => {
-    const invalidFilePath = 'nonexistent.md'; // Replace with a path that doesn't exist
+    const invalidFilePath = 'nonexistent.md'; 
     return expect(mdLinks(invalidFilePath)).rejects.toThrowError(expect.stringContaining('Route does not exist'));
   });
   
