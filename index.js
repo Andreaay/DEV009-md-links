@@ -1,5 +1,5 @@
 const fs = require('fs').promises;
-const { Console } = require('console');
+const axios = require('axios');
 const path = require('path');
 
 function mdLinks(filePath, validate = false) {
@@ -35,10 +35,10 @@ function mdLinks(filePath, validate = false) {
             if (validate) {
               // Validate links if requested
               const linkValidationPromises = links.map((link) => {
-                return fetch(link.href)
+                return axios.get(link.href)
                   .then((response) => {
                     link.status = response.status;
-                    link.ok = response.ok;
+                    link.ok = response.status >= 200 && response.status < 400;
                     return link;
                   })
                   .catch((error) => {
