@@ -1,74 +1,26 @@
-const fs = require('fs').promises;
-const axios = require('axios');
-const path = require('path');
+const { checkAbsolute, pathExists, getContent, validateLinks} = require('./data');
 
-function mdLinks(filePath, validate = false) {
+function mdLinks(filePath, options) {
   return new Promise((resolve, reject) => {
-    // Transform the input path to an absolute path
-    const absolutePath = path.resolve(filePath);
+    const absolutePath = checkAbsolute(filePath);
 
-    // Check if the path exists on the filesystem
-    fs.access(absolutePath)
-      .then(() => {
-        // Ensure that the file is of Markdown type
-        const extname = path.extname(absolutePath).toLowerCase();
-        if (![".md", ".mkd", ".mdwn", ".mdown", ".mdtxt", ".mdtext", ".markdown", ".text"].includes(extname)) {
-          reject(new Error("The file is not of Markdown type."));
+    if (!pathExists(absolutePath)) {
+      reject('This path does not exist, enter a valid path.');
+      return;
+    }
+
+    getContent(absolutePath)
+      .then((links) => {
+        if (links.length > 0) {
+          resolve(options ? validateLinks(links) : links);
+        } else {
+          reject('The file is empty or there are no links to validate.');
         }
-
-        // Read the file
-        fs.readFile(absolutePath, 'utf-8')
-          .then((fileContent) => {
-            // Find links within the document
-            const links = [];
-            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-            let match;
-            while ((match = linkRegex.exec(fileContent))) {
-              const [, text, href] = match;
-              links.push({
-                href,
-                text,
-                file: absolutePath,
-              });
-            }
-
-            if (validate) {
-              // Validate links if requested
-              const linkValidationPromises = links.map((link) => {
-                return axios.get(link.href)
-                  .then((response) => {
-                    link.status = response.status;
-                    link.ok = response.status >= 200 && response.status < 400;
-                    return link;
-                  })
-                  .catch((error) => {
-                    link.status = null;
-                    link.ok = false;
-                    return link;
-                  });
-              });
-
-              // Wait for all validations to complete
-              Promise.all(linkValidationPromises)
-                .then((validatedLinks) => {
-                  resolve(validatedLinks);
-                })
-                .catch((validationError) => {
-                  reject(validationError);
-                });
-            } else {
-              // If validation is not requested, resolve the links as they are
-              resolve(links);
-            }
-          })
-          .catch((readError) => {
-            reject(readError);
-          });
       })
-      .catch((accessError) => {
-        reject(accessError);
+      .catch((error) => {
+        reject(error);
       });
   });
 }
 
-module.exports = mdLinks;
+module.exports = { mdLinks };

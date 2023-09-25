@@ -1,43 +1,118 @@
-const axios = require('axios');
-const fs = require('fs').promises;
 const path = require('path');
+const fs = require('fs');
+const axios = require('axios').default;
 
-// Function to validate a single link using Axios
-async function validateLink(link) {
-  try {
-    const response = await axios.get(link.href);
-    link.status = response.status;
-    link.ok = response.status >= 200 && response.status < 400;
-  } catch (error) {
-    link.status = null;
-    link.ok = false;
-  }
-  return link;
+function checkAbsolute(filePath) {
+  return path.resolve(filePath);
 }
 
-// Function to extract links from a Markdown file
-async function extractLinks(filePath) {
-  try {
-    const absolutePath = path.resolve(filePath);
-    const fileContent = await fs.readFile(absolutePath, 'utf-8');
-    const links = [];
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let match;
-    while ((match = linkRegex.exec(fileContent))) {
-      const [, text, href] = match;
-      links.push({
-        href,
-        text: text.slice(0, 50), // Truncate the text to 50 characters
-        file: absolutePath,
-      });
-    }
-    return links;
-  } catch (error) {
-    throw error;
+function pathExists(filePath) {
+  return fs.existsSync(filePath);
+}
+
+function getContent(filePath) {
+  const isDirectory = fs.statSync(filePath).isDirectory();
+
+  if (isDirectory) {
+    const files = readPath(filePath);
+    const allFiles = files.map((file) => readFiles(file));
+    return Promise.all(allFiles)
+      .then((links) => links.flat());
   }
+
+  return readFiles(filePath);
+}
+
+function readPath(filePath) {
+  const arrayAllPaths = [];
+  const files = fs.readdirSync(filePath);
+
+  files.forEach((file) => {
+    const fullPath = path.join(filePath, file);
+    const stat = fs.statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      const sub = readPath(fullPath);
+      arrayAllPaths.push(...sub);
+    } else if (fileExtension(fullPath) === '.md') {
+      arrayAllPaths.push(fullPath);
+    }
+  });
+
+  return arrayAllPaths;
+}
+
+function readFiles(filePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (fileExtension(filePath) === '.md') {
+        resolve(getLinks(data, filePath));
+      } else {
+        reject(new Error('Not Markdown. Please, enter a markdown file (.md).'));
+      }
+    });
+  });
+}
+
+function fileExtension(filePath) {
+  return path.extname(filePath);
+}
+
+function getLinks(data, filePath) {
+  const regex = /\[(.*?)\]\((https?:\/\/.*?)\)/g;
+  const links = [];
+  let match;
+
+  while ((match = regex.exec(data)) !== null) {
+    const text = match[1];
+    const href = match[2];
+    links.push({ href, text, file: filePath });
+  }
+
+  return links;
+}
+
+function validateLinks(links) {
+  const validatePromises = links.map((link) => {
+    return axios.get(link.href)
+      .then((response) => {
+        link.status = response.status;
+        link.statusText = response.statusText;
+        return link;
+      })
+      .catch((error) => {
+        link.status = error.response ? error.response.status : 'no response';
+        link.statusText = 'Fail';
+        return link;
+      });
+  });
+
+  return Promise.all(validatePromises);
+}
+
+function stats(arr) {
+  return {
+    Total: arr.length,
+    Unique: new Set(arr.map((links) => links.href)).size,
+  };
+}
+
+function statsValidate(arr) {
+  return {
+    Total: arr.length,
+    Unique: new Set(arr.map((link) => link.href)).size,
+    OK: arr.filter((link) => link.statusText === 'OK').length,
+    Broken: arr.filter((link) => link.statusText === 'Fail').length,
+  };
 }
 
 module.exports = {
-  validateLink,
-  extractLinks,
+  checkAbsolute,
+  pathExists,
+  readPath,
+  readFiles,
+  validateLinks,
+  getContent,
+  stats,
+  statsValidate,
 };
