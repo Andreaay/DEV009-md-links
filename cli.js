@@ -22,13 +22,14 @@ mdLinks.mdLinks(inputPath, validateOption)
     } else if (args.includes('--stats')) {
       const totalLinks = links.length;
       const uniqueLinks = new Set(links.map((link) => link.href)).size;
-      // const okLinks = links.filter((link) => link.ok).length;
-      // const brokenLinks = links.filter((link) => !link.ok).length;\nBroken: ${brokenLinks}, parte de validacion =>\nOK: ${okLinks}`
       console.log(`Total: ${totalLinks}\nUnique: ${uniqueLinks}`);
+    } else if (args.includes('--validate')){
+      links.forEach((link) => {
+        console.log(`${link.file} - ${link.text} - ${link.href} - ${link.statusText} - ${link.status}`);
+      });
     }else {
       links.forEach((link) => {
-        console.log(`${link.file} - ${link.href} - ${link.ok ? 'OK' : 'Fail'} - ${link.status}`);
-        console.log(link);
+        console.log(`${link.file}- ${link.text} - ${link.href}`);
       });
     }
   })

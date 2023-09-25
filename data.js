@@ -73,15 +73,15 @@ function getLinks(data, filePath) {
 }
 
 function validateLinks(links) {
-  const validatePromises = links.map((link) => {
+  const validatePromises = links.map(link => {
     return axios.get(link.href)
       .then((response) => {
         link.status = response.status;
-        link.statusText = response.statusText;
+        link.statusText = 'ok';
         return link;
       })
       .catch((error) => {
-        link.status = error.response ? error.response.status : 'no response';
+        link.status = error.status !== undefined ? error.status : 'no response';
         link.statusText = 'Fail';
         return link;
       });
