@@ -1,20 +1,143 @@
-const fs = require('fs');
-const path = require('path');
-const mdLinks = require('../index');
-
+const { readFiles, validateLinks, readPath, getContent, stats, statsValidate } = require('../data.js');
+const { mdLinks } = require('../index.js');
+const noLinks = 'testingFiles\\testingFileswithNoLinks.md';
+const existentLinks = 'testingFiles\\ttestingFileWithLinks.md'
+const options = '--validate';
 
 describe('mdLinks', () => {
-  it('should return an array of links when given a valid Markdown file', () => {
-    const filePath = path.resolve(__dirname, 'README.md');
-    return mdLinks(filePath).then((links) => {
-      expect(Array.isArray(links)).toBe(true);
-    });
+
+it('should be a function that resolves a promise', () => {
+    expect (typeof mdLinks).toBe('function');
+  })
+
+  it('should return an error if the path does not exist', () => {
+    return expect(mdLinks('notAFile.md')).rejects.toEqual('This path does not exist, enter a valid path.');
+  })
+
+  it('should throw an error message if there are no links in the file', () => {
+    return expect(mdLinks(noLinks)).rejects.toEqual('This path does not exist, enter a valid path.');
+  })
+
+  it('should return an array with the links in an md file', () => {
+    return expect(mdLinks(existentLinks)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        href: expect.any(String),
+        text: expect.any(String),
+        file: expect.any(String),
+      }),
+    ]))
+  })
+
+  it('should return an array with the links in an md file', () => {
+    return expect(mdLinks(existentLinks, options)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        href: expect.any(String),
+        text: expect.any(String),
+        file: expect.any(String),
+        status: expect.anything(),
+        statusText: expect.any(String)
+      }),
+    ]))
+  })
+});
+
+describe('validateLinks', () => {
+
+  it('should validate links', () => {
+    const links = [
+      { href: 'valid-example', text: 'Valid Link', file: 'valid.md' },
+      { href: 'invalid-example', text: 'Invalid Link', file: 'invalid.md' },
+    ];
+  
+    return validateLinks(links)
+    .then((results) => {
+      expect(results).toEqual([
+        {
+          text: 'Valid Link',
+          href: 'valid-example',
+          file: 'valid.md',
+          status: 200,
+          statusText: 'OK',
+        },
+        {
+          text: 'Invalid Link',
+          href: 'invalid-example',
+          file: 'invalid.md',
+          status: 404,
+          statusText: 'Fail',
+        },
+      ])
+    })
   });
 
-  it('should reject with an error when given an invalid file path', () => {
-    const invalidFilePath = 'nonexistent.md'; 
-    return expect(mdLinks(invalidFilePath)).rejects.toThrowError(expect.stringContaining('Route does not exist'));
+  it('should handle no response', () => {
+    const links = [
+      { href: 'nonexistent-link', text: 'Nonexistent Link', file: 'nonexistent.md' },
+      ];
+
+      return validateLinks(links)
+      .then((results) => {
+        expect(results).toEqual([
+          {
+            text: 'Nonexistent Link',
+            href: 'nonexistent-link',
+            file: 'nonexistent.md',
+            status: 'no response',
+            statusText: 'Fail',
+          },
+        ]);
+      });
   });
+});
+
+describe('readFiles', () => {
+
+  it('should throw an error if the file is not .md', () => {
+    return expect(readFiles('testingFiles/testing.html')).rejects.toBe('Not Markdown. Please, enter a markdown file (.md).');
+  })
   
+});
+
+describe('readPath', () => {
+
+  it('return an array with the files in a directory', () => {
+    expect(readPath('testingFiles')).toEqual([
+      "testingFiles\\testingFileswithNoLinks.md",
+      "testingFiles\\ttestingFileWithLinks.md",
+    ]);
+});
+
+});
+
+describe('getContent', () => {
+
+  it('return an array with all the links in all files in a directory', () => {
+    return expect(getContent('testingFiles\\ttestingFileWithLinks.md')).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        href: expect.any(String),
+        text: expect.any(String),
+        file: expect.any(String),
+      }),
+    ]))
+  });
+
+});
+
+describe('stats and statsValidate', () => {
+  const linksArray = [
+    { href: 'link1', statusText: 'OK' },
+    { href: 'link1', statusText: 'OK' },
+    { href: 'link2', statusText: 'OK' },
+    { href: 'link3', statusText: 'Fail' },
+    { href: 'link4', statusText: 'Fail' }
+  ];
+
+  it('returns the number of total links and the number of unique links', () => {
+    expect(stats(linksArray)).toEqual({ Total: 5, Unique: 4 });
+  });
+
+  it('returns the number of total links and the number of unique links', () => {
+    expect(statsValidate(linksArray)).toEqual({ Total: 5, Unique: 4, OK: 3, Broken: 2 });
+  });
 
 });
