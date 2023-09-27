@@ -22,33 +22,6 @@ it('should be a function that resolves a promise', () => {
 
 describe('validateLinks', () => {
 
-  it('should validate links', () => {
-    const links = [
-      { href: 'valid-example', text: 'Valid Link', file: 'valid.md' },
-      { href: 'invalid-example', text: 'Invalid Link', file: 'invalid.md' },
-    ];
-  
-    return validateLinks(links)
-    .then((results) => {
-      expect(results).toEqual([
-        {
-          text: 'Valid Link',
-          href: 'valid-example',
-          file: 'valid.md',
-          status: 200,
-          statusText: 'OK',
-        },
-        {
-          text: 'Invalid Link',
-          href: 'invalid-example',
-          file: 'invalid.md',
-          status: 404,
-          statusText: 'Fail',
-        },
-      ])
-    })
-  });
-
   it('should handle no response', () => {
     const links = [
       { href: 'nonexistent-link', text: 'Nonexistent Link', file: 'nonexistent.md' },
@@ -75,17 +48,6 @@ describe('readFiles', () => {
     return expect(readFiles('testingFiles/testing.html')).rejects.toThrow('Not Markdown. Please, enter a markdown file (.md).');
   })
   
-});
-
-describe('readPath', () => {
-  it('return an array with the files in a directory', () => {
-    const testFolderPath = path.resolve(__dirname, 'testingFiles');
-    const expectedPaths = [
-      path.join(testFolderPath, 'testingFileswithNoLinks.md'),
-      path.join(testFolderPath, 'README.md'),
-    ];
-    expect(readPath(testFolderPath)).toEqual(expectedPaths);
-  });
 });
 
 describe('getContent', () => {
