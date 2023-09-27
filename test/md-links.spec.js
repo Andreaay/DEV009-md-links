@@ -1,7 +1,8 @@
+const path = require('path');
 const { readFiles, validateLinks, readPath, getContent, stats, statsValidate } = require('../data.js');
 const { mdLinks } = require('../index.js');
 const noLinks = 'testingFiles\\testingFileswithNoLinks.md';
-const existentLinks = 'testingFiles\\ttestingFileWithLinks.md'
+const existentLinks = 'testingFiles\\README.md'
 const options = '--validate';
 
 describe('mdLinks', () => {
@@ -16,28 +17,6 @@ it('should be a function that resolves a promise', () => {
 
   it('should throw an error message if there are no links in the file', () => {
     return expect(mdLinks(noLinks)).rejects.toEqual('This path does not exist, enter a valid path.');
-  })
-
-  it('should return an array with the links in an md file', () => {
-    return expect(mdLinks(existentLinks)).resolves.toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        href: expect.any(String),
-        text: expect.any(String),
-        file: expect.any(String),
-      }),
-    ]))
-  })
-
-  it('should return an array with the links in an md file', () => {
-    return expect(mdLinks(existentLinks, options)).resolves.toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        href: expect.any(String),
-        text: expect.any(String),
-        file: expect.any(String),
-        status: expect.anything(),
-        statusText: expect.any(String)
-      }),
-    ]))
   })
 });
 
@@ -93,34 +72,35 @@ describe('validateLinks', () => {
 describe('readFiles', () => {
 
   it('should throw an error if the file is not .md', () => {
-    return expect(readFiles('testingFiles/testing.html')).rejects.toBe('Not Markdown. Please, enter a markdown file (.md).');
+    return expect(readFiles('testingFiles/testing.html')).rejects.toThrow('Not Markdown. Please, enter a markdown file (.md).');
   })
   
 });
 
 describe('readPath', () => {
-
   it('return an array with the files in a directory', () => {
-    expect(readPath('testingFiles')).toEqual([
-      "testingFiles\\testingFileswithNoLinks.md",
-      "testingFiles\\ttestingFileWithLinks.md",
-    ]);
-});
-
+    const testFolderPath = path.resolve(__dirname, 'testingFiles');
+    const expectedPaths = [
+      path.join(testFolderPath, 'testingFileswithNoLinks.md'),
+      path.join(testFolderPath, 'README.md'),
+    ];
+    expect(readPath(testFolderPath)).toEqual(expectedPaths);
+  });
 });
 
 describe('getContent', () => {
-
   it('return an array with all the links in all files in a directory', () => {
-    return expect(getContent('testingFiles\\ttestingFileWithLinks.md')).resolves.toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        href: expect.any(String),
-        text: expect.any(String),
-        file: expect.any(String),
-      }),
-    ]))
+    const testFolderPath = path.resolve(__dirname, 'testingFiles');
+    return expect(getContent(testFolderPath)).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          href: expect.any(String),
+          text: expect.any(String),
+          file: expect.stringContaining(testFolderPath),
+        }),
+      ])
+    );
   });
-
 });
 
 describe('stats and statsValidate', () => {

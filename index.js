@@ -12,9 +12,19 @@ function mdLinks(filePath, options) {
     getContent(absolutePath)
       .then((links) => {
         if (links.length > 0) {
-          resolve(options ? validateLinks(links) : links);
+          if (options) {
+            validateLinks(links)
+              .then((validatedLinks) => {
+                resolve(validatedLinks);
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          } else {
+            resolve(links);
+          }
         } else {
-          reject('The file is empty or there are no links to validate.');
+          reject(new Error('The file is empty or there are no links to validate.'));
         }
       })
       .catch((error) => {
