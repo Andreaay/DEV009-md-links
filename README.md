@@ -13,7 +13,13 @@
 
 ## Basic Usage
 
-1. Install **mdLinks** in your project:
+1. Install **mdLinks** from GitHub:
 
    ```bash
-   npm install md-links
+   npm install -g github:andreaay/dev009-md-links
+
+2. Run the command in the command line, providing the path to a Markdown file:
+
+```bash
+md-links my-file.md
+
