@@ -46,6 +46,7 @@ With the --stats option, you'll obtain statistics on the total number of links a
     Total: 10
     Unique: 8
     Broken: 2
+    Ok: 0
 
 * For --stats: 
 
@@ -58,3 +59,6 @@ With the --stats option, you'll obtain statistics on the total number of links a
   
     ```bash
     /Users/example/YOURproject - How to Write a JavaScript Promise - https://www.freecodecamp.org - ok - 200
+
+
+* Ensure that you provide a valid path as an argument for the command.
