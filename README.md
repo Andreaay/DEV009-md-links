@@ -32,5 +32,5 @@
 
   or
 
-  ```bash
-  md-links my-file.md --validate
+   ```bash
+   md-links my-file.md --validate
