@@ -29,8 +29,5 @@
 
    ```bash
    md-links my-file.md --validate
-
-  or
-
-   ```bash
-   md-links my-file.md --validate
+   
+   md-links my-file.md --stats
