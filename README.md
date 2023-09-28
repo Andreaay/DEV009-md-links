@@ -58,10 +58,3 @@ With the --stats option, you'll obtain statistics on the total number of links a
   
     ```bash
     /Users/example/YOURproject - How to Write a JavaScript Promise - https://www.freecodecamp.org - ok - 200
-
-
-  
-
-
-
-
