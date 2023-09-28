@@ -31,3 +31,37 @@
    md-links my-file.md --validate
    
    md-links my-file.md --stats
+
+## Results
+
+When you execute the mdLinks command, you will receive detailed information about the links found in the Markdown files.
+If you use the --validate option, it will verify the status of each link and display whether it is active or broken.
+With the --stats option, you'll obtain statistics on the total number of links and unique links.
+
+###Example Results:
+
+* For --validate and --stats together:
+
+    ```bash
+    Total: 10
+    Unique: 8
+    Broken: 2
+
+* For --stats: 
+
+    ```bash
+    Total: 19
+    Unique: 19
+
+
+* For --validate  you get href, text, file, status, statusText:
+  
+    ```bash
+    /Users/example/YOURproject - How to Write a JavaScript Promise - https://www.freecodecamp.org - ok - 200
+
+
+  
+
+
+
+
