@@ -20,6 +20,17 @@
 
 2. Run the command in the command line, providing the path to a Markdown file:
 
-```bash
-md-links my-file.md
+   ```bash
+   md-links my-file.md
 
+3. Get detailed information about the links in the file, including their status and associated text.
+
+4. Optionally, you can use the --validate and --stats options to validate links and obtain additional statistics.
+
+   ```bash
+   md-links my-file.md --validate
+
+  or
+
+  ```bash
+  md-links my-file.md --validate
