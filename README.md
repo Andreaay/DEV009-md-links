@@ -38,7 +38,7 @@ When you execute the mdLinks command, you will receive detailed information abou
 If you use the --validate option, it will verify the status of each link and display whether it is active or broken.
 With the --stats option, you'll obtain statistics on the total number of links and unique links.
 
-###Example Results:
+### Example Results:
 
 * For --validate and --stats together:
 
